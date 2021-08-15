@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package todos;
+option go_package = "todos/proto";
+
+service TodoService {
+  rpc Add (AddRequest) returns (Todo) {}
+  rpc ChangeStatus (ChangeStatusRequest) returns (Todo) {}
+  rpc ListAll (ListAllRequest) returns (Todos) {}
+  rpc Remove (RemoveRequest) returns (RemoveResponse) {}
+
+}
+
+message Todo {
+  string id = 1;
+  string label = 2;
+  bool completed = 3;
+}
+
+message Todos {
+  repeated Todo todos = 1;
+}
+
+message AddRequest {
+  string label = 1;
+  bool completed = 2;
+}
+
+message ChangeStatusRequest {
+  string id = 1;
+}
+
+message ListAllRequest {
+  Option option = 1;
+
+  enum Option {
+    ALL = 0;
+    COMPLETED = 1;
+    INCOMPLETED = 2;
+  }
+}
+
+message RemoveRequest {
+  string id = 1;
+}
+
+message RemoveResponse {}
