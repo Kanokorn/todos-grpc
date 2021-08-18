@@ -11,31 +11,31 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type mockTodoManager struct {
+type mockService struct {
 	AddFn          func(ctx context.Context, todo *todos.Todo) (*todos.Todo, error)
 	ChangeStatusFn func(ctx context.Context, id string) (*todos.Todo, error)
 	ListFn         func(ctx context.Context, option todos.ListOption) ([]*todos.Todo, error)
 	RemoveFn       func(ctx context.Context, id string) error
 }
 
-func (m *mockTodoManager) Add(ctx context.Context, todo *todos.Todo) (*todos.Todo, error) {
+func (m *mockService) Add(ctx context.Context, todo *todos.Todo) (*todos.Todo, error) {
 	return m.AddFn(ctx, todo)
 }
 
-func (m *mockTodoManager) ChangeStatus(ctx context.Context, id string) (*todos.Todo, error) {
+func (m *mockService) ChangeStatus(ctx context.Context, id string) (*todos.Todo, error) {
 	return m.ChangeStatusFn(ctx, id)
 }
 
-func (m *mockTodoManager) List(ctx context.Context, option todos.ListOption) ([]*todos.Todo, error) {
+func (m *mockService) List(ctx context.Context, option todos.ListOption) ([]*todos.Todo, error) {
 	return m.ListFn(ctx, option)
 }
 
-func (m *mockTodoManager) Remove(ctx context.Context, id string) error {
+func (m *mockService) Remove(ctx context.Context, id string) error {
 	return m.RemoveFn(ctx, id)
 }
 
 func TestAddTodoSuccess(t *testing.T) {
-	mock := &mockTodoManager{}
+	mock := &mockService{}
 	mock.AddFn = func(ctx context.Context, todo *todos.Todo) (*todos.Todo, error) {
 		todo.ID = "1"
 		return todo, nil
@@ -53,7 +53,7 @@ func TestAddTodoSuccess(t *testing.T) {
 }
 
 func TestAddTodoError(t *testing.T) {
-	mock := &mockTodoManager{}
+	mock := &mockService{}
 	mock.AddFn = func(ctx context.Context, todo *todos.Todo) (*todos.Todo, error) {
 		return nil, fmt.Errorf("boom!")
 	}
@@ -67,7 +67,7 @@ func TestAddTodoError(t *testing.T) {
 }
 
 func TestChangeStatusSuccess(t *testing.T) {
-	mock := &mockTodoManager{}
+	mock := &mockService{}
 	mock.ChangeStatusFn = func(ctx context.Context, id string) (*todos.Todo, error) {
 		return &todos.Todo{
 			ID:        id,
@@ -88,7 +88,7 @@ func TestChangeStatusSuccess(t *testing.T) {
 }
 
 func TestChangeStatusError(t *testing.T) {
-	mock := &mockTodoManager{}
+	mock := &mockService{}
 	mock.ChangeStatusFn = func(ctx context.Context, id string) (*todos.Todo, error) {
 		return nil, fmt.Errorf("boom!")
 	}
@@ -103,7 +103,7 @@ func TestChangeStatusError(t *testing.T) {
 }
 
 func TestListAllTodoSuccess(t *testing.T) {
-	mock := &mockTodoManager{}
+	mock := &mockService{}
 	mock.ListFn = func(ctx context.Context, option todos.ListOption) ([]*todos.Todo, error) {
 		var result []*todos.Todo
 
@@ -142,7 +142,7 @@ func TestListAllTodoSuccess(t *testing.T) {
 }
 
 func TestListAllTodoError(t *testing.T) {
-	mock := &mockTodoManager{}
+	mock := &mockService{}
 	mock.ListFn = func(ctx context.Context, option todos.ListOption) ([]*todos.Todo, error) {
 		return nil, fmt.Errorf("boom!")
 	}
@@ -157,7 +157,7 @@ func TestListAllTodoError(t *testing.T) {
 }
 
 func TestListAllCompletedTodo(t *testing.T) {
-	mock := &mockTodoManager{}
+	mock := &mockService{}
 	mock.ListFn = func(ctx context.Context, option todos.ListOption) ([]*todos.Todo, error) {
 		var result []*todos.Todo
 
@@ -185,7 +185,7 @@ func TestListAllCompletedTodo(t *testing.T) {
 }
 
 func TestListAllInCompletedTodo(t *testing.T) {
-	mock := &mockTodoManager{}
+	mock := &mockService{}
 	mock.ListFn = func(ctx context.Context, option todos.ListOption) ([]*todos.Todo, error) {
 		var result []*todos.Todo
 
@@ -213,7 +213,7 @@ func TestListAllInCompletedTodo(t *testing.T) {
 }
 
 func TestRemoveTodoSuccess(t *testing.T) {
-	mock := &mockTodoManager{}
+	mock := &mockService{}
 	mock.RemoveFn = func(ctx context.Context, id string) error {
 		return nil
 	}
@@ -227,7 +227,7 @@ func TestRemoveTodoSuccess(t *testing.T) {
 }
 
 func TestRemoveTodoError(t *testing.T) {
-	mock := &mockTodoManager{}
+	mock := &mockService{}
 	mock.RemoveFn = func(ctx context.Context, id string) error {
 		return fmt.Errorf("boom!")
 	}

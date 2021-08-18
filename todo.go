@@ -16,7 +16,7 @@ type Todo struct {
 	Completed bool
 }
 
-type TodoManager interface {
+type Service interface {
 	Add(ctx context.Context, todo *Todo) (*Todo, error)
 	ChangeStatus(ctx context.Context, id string) (*Todo, error)
 	List(ctx context.Context, option ListOption) ([]*Todo, error)

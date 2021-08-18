@@ -10,19 +10,19 @@ import (
 )
 
 type TodoServer struct {
-	TodoManager todos.TodoManager
+	TodoService todos.Service
 
 	proto.UnimplementedTodoServiceServer
 }
 
-func NewServer(todoManager todos.TodoManager) *TodoServer {
+func NewServer(s todos.Service) *TodoServer {
 	return &TodoServer{
-		TodoManager: todoManager,
+		TodoService: s,
 	}
 }
 
 func (s *TodoServer) Add(ctx context.Context, r *proto.AddRequest) (*proto.Todo, error) {
-	todo, err := s.TodoManager.Add(ctx, &todos.Todo{
+	todo, err := s.TodoService.Add(ctx, &todos.Todo{
 		Label: r.GetLabel(),
 	})
 	if err != nil {
@@ -36,7 +36,7 @@ func (s *TodoServer) Add(ctx context.Context, r *proto.AddRequest) (*proto.Todo,
 }
 
 func (s *TodoServer) ChangeStatus(ctx context.Context, r *proto.ChangeStatusRequest) (*proto.Todo, error) {
-	todo, err := s.TodoManager.ChangeStatus(ctx, r.Id)
+	todo, err := s.TodoService.ChangeStatus(ctx, r.Id)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -49,7 +49,7 @@ func (s *TodoServer) ChangeStatus(ctx context.Context, r *proto.ChangeStatusRequ
 }
 
 func (s *TodoServer) ListAll(ctx context.Context, r *proto.ListAllRequest) (*proto.Todos, error) {
-	todos, err := s.TodoManager.List(ctx, todos.ListOption(r.Option))
+	todos, err := s.TodoService.List(ctx, todos.ListOption(r.Option))
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -70,7 +70,7 @@ func (s *TodoServer) ListAll(ctx context.Context, r *proto.ListAllRequest) (*pro
 }
 
 func (s *TodoServer) Remove(ctx context.Context, r *proto.RemoveRequest) (*proto.RemoveResponse, error) {
-	err := s.TodoManager.Remove(ctx, r.Id)
+	err := s.TodoService.Remove(ctx, r.Id)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
