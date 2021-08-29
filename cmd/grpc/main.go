@@ -12,6 +12,9 @@ import (
 	"todos/internal/storage"
 	"todos/proto"
 
+	"github.com/jmoiron/sqlx"
+
+	_ "github.com/lib/pq"
 	"google.golang.org/grpc"
 )
 
@@ -30,8 +33,13 @@ func run() error {
 
 	var opts []grpc.ServerOption
 	grpcServer := grpc.NewServer(opts...)
-	inMemory := storage.NewInMemory()
-	proto.RegisterTodoServiceServer(grpcServer, server.NewServer(inMemory))
+	//inMemory := storage.NewInMemory()
+	db, err := sqlx.Connect("postgres", "postgres://postgres:password@127.0.0.1:5432/todos?sslmode=disable")
+	if err != nil {
+		log.Fatalln(err)
+	}
+	inPG := storage.NewPostgres(db)
+	proto.RegisterTodoServiceServer(grpcServer, server.NewServer(inPG))
 
 	go func() {
 		ctx, _ := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)

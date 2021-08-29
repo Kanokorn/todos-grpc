@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"todos"
+	"todos/internal/storage"
 	"todos/proto"
 
 	"google.golang.org/grpc/codes"
@@ -10,12 +11,12 @@ import (
 )
 
 type TodoServer struct {
-	TodoService todos.Service
+	TodoService *storage.Postgres
 
 	proto.UnimplementedTodoServiceServer
 }
 
-func NewServer(s todos.Service) *TodoServer {
+func NewServer(s *storage.Postgres) *TodoServer {
 	return &TodoServer{
 		TodoService: s,
 	}
