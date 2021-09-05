@@ -2,7 +2,8 @@ package storage
 
 import (
 	"context"
-	"todos"
+
+	"github.com/Kanokorn/todos-grpc/internal/todos"
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
@@ -34,7 +35,7 @@ func (p *Postgres) ChangeStatus(ctx context.Context, id string) (*todos.Todo, er
 	var todo todos.Todo
 	err := row.Scan(&todo.ID, &todo.Label, &todo.Completed)
 	if err != nil {
-		return nil, err
+		return nil, &ErrNotFound{ID: id}
 	}
 
 	todo.Completed = !todo.Completed
@@ -42,7 +43,7 @@ func (p *Postgres) ChangeStatus(ctx context.Context, id string) (*todos.Todo, er
 	changeStatusSQL := `UPDATE todos SET todos.completed = $2 WHERE todos.id = $1`
 	_, err = p.db.ExecContext(ctx, changeStatusSQL, todo.ID, todo.Completed)
 	if err != nil {
-		return nil, err
+		return nil, &ErrUpdate{ID: id}
 	}
 
 	return &todo, nil

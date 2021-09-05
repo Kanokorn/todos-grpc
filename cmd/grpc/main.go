@@ -8,9 +8,10 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"todos/internal/server"
-	"todos/internal/storage"
-	"todos/proto"
+
+	"github.com/Kanokorn/todos-grpc/internal/server"
+	"github.com/Kanokorn/todos-grpc/internal/storage"
+	"github.com/Kanokorn/todos-grpc/proto"
 
 	"github.com/jmoiron/sqlx"
 
@@ -33,7 +34,7 @@ func run() error {
 
 	var opts []grpc.ServerOption
 	grpcServer := grpc.NewServer(opts...)
-	//inMemory := storage.NewInMemory()
+
 	db, err := sqlx.Connect("postgres", "postgres://postgres:password@127.0.0.1:5432/todos?sslmode=disable")
 	if err != nil {
 		log.Fatalln(err)

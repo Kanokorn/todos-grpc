@@ -4,44 +4,45 @@ import (
 	"context"
 	"fmt"
 	"testing"
-	"todos"
-	"todos/internal/server"
-	"todos/proto"
+
+	"github.com/Kanokorn/todos-grpc/internal/server"
+	"github.com/Kanokorn/todos-grpc/internal/todos"
+	"github.com/Kanokorn/todos-grpc/proto"
 
 	"github.com/stretchr/testify/require"
 )
 
-type mockService struct {
+type mockDB struct {
 	AddFn          func(ctx context.Context, todo *todos.Todo) (*todos.Todo, error)
 	ChangeStatusFn func(ctx context.Context, id string) (*todos.Todo, error)
 	ListFn         func(ctx context.Context, option todos.ListOption) ([]*todos.Todo, error)
 	RemoveFn       func(ctx context.Context, id string) error
 }
 
-func (m *mockService) Add(ctx context.Context, todo *todos.Todo) (*todos.Todo, error) {
+func (m *mockDB) Add(ctx context.Context, todo *todos.Todo) (*todos.Todo, error) {
 	return m.AddFn(ctx, todo)
 }
 
-func (m *mockService) ChangeStatus(ctx context.Context, id string) (*todos.Todo, error) {
+func (m *mockDB) ChangeStatus(ctx context.Context, id string) (*todos.Todo, error) {
 	return m.ChangeStatusFn(ctx, id)
 }
 
-func (m *mockService) List(ctx context.Context, option todos.ListOption) ([]*todos.Todo, error) {
+func (m *mockDB) List(ctx context.Context, option todos.ListOption) ([]*todos.Todo, error) {
 	return m.ListFn(ctx, option)
 }
 
-func (m *mockService) Remove(ctx context.Context, id string) error {
+func (m *mockDB) Remove(ctx context.Context, id string) error {
 	return m.RemoveFn(ctx, id)
 }
 
 func TestAddTodoSuccess(t *testing.T) {
-	mock := &mockService{}
-	mock.AddFn = func(ctx context.Context, todo *todos.Todo) (*todos.Todo, error) {
+	db := &mockDB{}
+	db.AddFn = func(ctx context.Context, todo *todos.Todo) (*todos.Todo, error) {
 		todo.ID = "1"
 		return todo, nil
 	}
 
-	srv := server.NewServer(mock)
+	srv := server.NewServer(db)
 	resp, err := srv.Add(context.Background(), &proto.AddRequest{
 		Label: "Hello",
 	})
@@ -53,12 +54,12 @@ func TestAddTodoSuccess(t *testing.T) {
 }
 
 func TestAddTodoError(t *testing.T) {
-	mock := &mockService{}
-	mock.AddFn = func(ctx context.Context, todo *todos.Todo) (*todos.Todo, error) {
+	db := &mockDB{}
+	db.AddFn = func(ctx context.Context, todo *todos.Todo) (*todos.Todo, error) {
 		return nil, fmt.Errorf("boom!")
 	}
 
-	srv := server.NewServer(mock)
+	srv := server.NewServer(db)
 	_, err := srv.Add(context.Background(), &proto.AddRequest{
 		Label: "Hello",
 	})
@@ -67,8 +68,8 @@ func TestAddTodoError(t *testing.T) {
 }
 
 func TestChangeStatusSuccess(t *testing.T) {
-	mock := &mockService{}
-	mock.ChangeStatusFn = func(ctx context.Context, id string) (*todos.Todo, error) {
+	db := &mockDB{}
+	db.ChangeStatusFn = func(ctx context.Context, id string) (*todos.Todo, error) {
 		return &todos.Todo{
 			ID:        id,
 			Label:     "Hello",
@@ -76,7 +77,7 @@ func TestChangeStatusSuccess(t *testing.T) {
 		}, nil
 	}
 
-	srv := server.NewServer(mock)
+	srv := server.NewServer(db)
 	todo, err := srv.ChangeStatus(context.Background(), &proto.ChangeStatusRequest{
 		Id: "1",
 	})
@@ -88,12 +89,12 @@ func TestChangeStatusSuccess(t *testing.T) {
 }
 
 func TestChangeStatusError(t *testing.T) {
-	mock := &mockService{}
-	mock.ChangeStatusFn = func(ctx context.Context, id string) (*todos.Todo, error) {
+	db := &mockDB{}
+	db.ChangeStatusFn = func(ctx context.Context, id string) (*todos.Todo, error) {
 		return nil, fmt.Errorf("boom!")
 	}
 
-	srv := server.NewServer(mock)
+	srv := server.NewServer(db)
 	_, err := srv.ChangeStatus(context.Background(), &proto.ChangeStatusRequest{
 		Id: "1",
 	})
@@ -103,8 +104,8 @@ func TestChangeStatusError(t *testing.T) {
 }
 
 func TestListAllTodoSuccess(t *testing.T) {
-	mock := &mockService{}
-	mock.ListFn = func(ctx context.Context, option todos.ListOption) ([]*todos.Todo, error) {
+	db := &mockDB{}
+	db.ListFn = func(ctx context.Context, option todos.ListOption) ([]*todos.Todo, error) {
 		var result []*todos.Todo
 
 		t1 := &todos.Todo{
@@ -123,7 +124,7 @@ func TestListAllTodoSuccess(t *testing.T) {
 		return result, nil
 	}
 
-	srv := server.NewServer(mock)
+	srv := server.NewServer(db)
 	todos, err := srv.ListAll(context.Background(), &proto.ListAllRequest{
 		Option: proto.ListAllRequest_ALL,
 	})
@@ -142,12 +143,12 @@ func TestListAllTodoSuccess(t *testing.T) {
 }
 
 func TestListAllTodoError(t *testing.T) {
-	mock := &mockService{}
-	mock.ListFn = func(ctx context.Context, option todos.ListOption) ([]*todos.Todo, error) {
+	db := &mockDB{}
+	db.ListFn = func(ctx context.Context, option todos.ListOption) ([]*todos.Todo, error) {
 		return nil, fmt.Errorf("boom!")
 	}
 
-	srv := server.NewServer(mock)
+	srv := server.NewServer(db)
 	_, err := srv.ListAll(context.Background(), &proto.ListAllRequest{
 		Option: proto.ListAllRequest_ALL,
 	})
@@ -157,8 +158,8 @@ func TestListAllTodoError(t *testing.T) {
 }
 
 func TestListAllCompletedTodo(t *testing.T) {
-	mock := &mockService{}
-	mock.ListFn = func(ctx context.Context, option todos.ListOption) ([]*todos.Todo, error) {
+	db := &mockDB{}
+	db.ListFn = func(ctx context.Context, option todos.ListOption) ([]*todos.Todo, error) {
 		var result []*todos.Todo
 
 		t1 := &todos.Todo{
@@ -171,7 +172,7 @@ func TestListAllCompletedTodo(t *testing.T) {
 		return result, nil
 	}
 
-	srv := server.NewServer(mock)
+	srv := server.NewServer(db)
 	todos, err := srv.ListAll(context.Background(), &proto.ListAllRequest{
 		Option: proto.ListAllRequest_COMPLETED,
 	})
@@ -185,8 +186,8 @@ func TestListAllCompletedTodo(t *testing.T) {
 }
 
 func TestListAllInCompletedTodo(t *testing.T) {
-	mock := &mockService{}
-	mock.ListFn = func(ctx context.Context, option todos.ListOption) ([]*todos.Todo, error) {
+	db := &mockDB{}
+	db.ListFn = func(ctx context.Context, option todos.ListOption) ([]*todos.Todo, error) {
 		var result []*todos.Todo
 
 		t1 := &todos.Todo{
@@ -199,7 +200,7 @@ func TestListAllInCompletedTodo(t *testing.T) {
 		return result, nil
 	}
 
-	srv := server.NewServer(mock)
+	srv := server.NewServer(db)
 	todos, err := srv.ListAll(context.Background(), &proto.ListAllRequest{
 		Option: proto.ListAllRequest_INCOMPLETED,
 	})
@@ -213,12 +214,12 @@ func TestListAllInCompletedTodo(t *testing.T) {
 }
 
 func TestRemoveTodoSuccess(t *testing.T) {
-	mock := &mockService{}
-	mock.RemoveFn = func(ctx context.Context, id string) error {
+	db := &mockDB{}
+	db.RemoveFn = func(ctx context.Context, id string) error {
 		return nil
 	}
 
-	srv := server.NewServer(mock)
+	srv := server.NewServer(db)
 	_, err := srv.Remove(context.Background(), &proto.RemoveRequest{
 		Id: "1",
 	})
@@ -227,12 +228,12 @@ func TestRemoveTodoSuccess(t *testing.T) {
 }
 
 func TestRemoveTodoError(t *testing.T) {
-	mock := &mockService{}
-	mock.RemoveFn = func(ctx context.Context, id string) error {
+	db := &mockDB{}
+	db.RemoveFn = func(ctx context.Context, id string) error {
 		return fmt.Errorf("boom!")
 	}
 
-	srv := server.NewServer(mock)
+	srv := server.NewServer(db)
 	_, err := srv.Remove(context.Background(), &proto.RemoveRequest{
 		Id: "1",
 	})
