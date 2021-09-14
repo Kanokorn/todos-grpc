@@ -40,7 +40,7 @@ func (p *Postgres) ChangeStatus(ctx context.Context, id string) (*todos.Todo, er
 
 	todo.Completed = !todo.Completed
 
-	changeStatusSQL := `UPDATE todos SET todos.completed = $2 WHERE todos.id = $1`
+	changeStatusSQL := `UPDATE todos SET completed = $2 WHERE id = $1`
 	_, err = p.db.ExecContext(ctx, changeStatusSQL, todo.ID, todo.Completed)
 	if err != nil {
 		return nil, &ErrUpdate{ID: id}
@@ -66,7 +66,7 @@ func (p *Postgres) List(ctx context.Context, option todos.ListOption) ([]*todos.
 	return result, nil
 }
 func (p *Postgres) Remove(ctx context.Context, id string) error {
-	removeSQL := `DELETE FROM todos WHERE todos.id = $`
+	removeSQL := `DELETE FROM todos WHERE id = $1`
 	_, err := p.db.ExecContext(ctx, removeSQL, id)
 	if err != nil {
 		return err
