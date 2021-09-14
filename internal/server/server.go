@@ -13,12 +13,12 @@ import (
 )
 
 type TodoServer struct {
-	Storage storage.Service
+	Storage storage.TodoRepository
 
 	proto.UnimplementedTodoServiceServer
 }
 
-func NewServer(s storage.Service) *TodoServer {
+func NewServer(s storage.TodoRepository) *TodoServer {
 	return &TodoServer{
 		Storage: s,
 	}

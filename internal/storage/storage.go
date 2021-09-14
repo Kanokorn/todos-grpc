@@ -7,7 +7,7 @@ import (
 	"github.com/Kanokorn/todos-grpc/internal/todos"
 )
 
-type Service interface {
+type TodoRepository interface {
 	Add(ctx context.Context, todo *todos.Todo) (*todos.Todo, error)
 	ChangeStatus(ctx context.Context, id string) (*todos.Todo, error)
 	List(ctx context.Context, option todos.ListOption) ([]*todos.Todo, error)
