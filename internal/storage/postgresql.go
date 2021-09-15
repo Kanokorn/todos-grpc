@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/Kanokorn/todos-grpc/internal/todos"
 
@@ -49,8 +50,24 @@ func (p *Postgres) ChangeStatus(ctx context.Context, id string) (*todos.Todo, er
 	return &todo, nil
 }
 func (p *Postgres) List(ctx context.Context, option todos.ListOption) ([]*todos.Todo, error) {
-	listSQL := `SELECT todos.id, todos.label, todos.completed FROM todos`
-	rows, err := p.db.QueryContext(ctx, listSQL)
+	var (
+		listSQL string
+		rows *sql.Rows
+		err error
+	)
+
+	switch option {
+	case todos.All:
+		listSQL = `SELECT todos.id, todos.label, todos.completed FROM todos`
+		rows, err = p.db.QueryContext(ctx, listSQL)
+	case todos.Incompleted:
+		listSQL = `SELECT todos.id, todos.label, todos.completed FROM todos WHERE todos.completed = $1`
+		rows, err = p.db.QueryContext(ctx, listSQL, false)
+	case todos.Completed:
+		listSQL = `SELECT todos.id, todos.label, todos.completed FROM todos WHERE todos.completed = $1`
+		rows, err = p.db.QueryContext(ctx, listSQL, true)
+	}
+
 	if err != nil {
 		return nil, err
 	}
